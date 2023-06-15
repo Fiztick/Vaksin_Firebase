@@ -28,7 +28,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"
-                android:id="@+id/IMLGambarMakanan"
+                android:id="@+id/IMLGambarPasien"
                 android:src="@drawable/baseline_person_24" />
 
         </androidx.cardview.widget.CardView>

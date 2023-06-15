@@ -1,6 +1,7 @@
 package com.pnj.vaksin_firebase
 
 import android.app.AlertDialog
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.Editable
@@ -17,7 +18,11 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.QuerySnapshot
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.ktx.storage
+import com.pnj.vaksin_firebase.auth.SettingsActivity
 import com.pnj.vaksin_firebase.databinding.ActivityMainBinding
+import com.pnj.vaksin_firebase.pasien.AddPasienActivity
 import com.pnj.vaksin_firebase.pasien.Pasien
 import com.pnj.vaksin_firebase.pasien.PasienAdapter
 import kotlinx.coroutines.Dispatchers
@@ -31,7 +36,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
 
-    private  lateinit var pasienRecyclerView: RecyclerView
+    private lateinit var pasienRecyclerView: RecyclerView
     private lateinit var pasienArrayList: ArrayList<Pasien>
     private lateinit var pasienAdapter: PasienAdapter
     private lateinit var db: FirebaseFirestore
@@ -53,6 +58,8 @@ class MainActivity : AppCompatActivity() {
 
         load_data()
 
+        swipeDelete()
+
         binding.txtSearchPasien.addTextChangedListener(object: TextWatcher {
             override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
 
@@ -68,6 +75,28 @@ class MainActivity : AppCompatActivity() {
 
             override fun afterTextChanged(p0: Editable?) {}
         })
+
+        binding.btnAddPasien.setOnClickListener {
+            val intentMain = Intent(this, AddPasienActivity::class.java)
+            startActivity(intentMain)
+        }
+
+        binding.bottomNavigation.setOnItemSelectedListener {
+            when(it.itemId) {
+                R.id.nav_bottom_home -> {
+                    val intent = Intent(this, MainActivity::class.java)
+                    startActivity(intent)
+                }
+                R.id.nav_bottom_setting -> {
+                    val intent = Intent(this, SettingsActivity::class.java)
+                    startActivity(intent)
+                }
+                R.id.nav_bottom_chat -> {
+//                    val intent = Intent(this, ChatActivity::class.java)
+                }
+            }
+            true
+        }
     }
 
     private fun load_data() {
@@ -117,6 +146,8 @@ class MainActivity : AppCompatActivity() {
                 lifecycleScope.launch {
                     db.collection("pasien")
                         .document(doc_id).delete()
+
+                    deleteFoto("img_pasien/${pasien.nik}_${pasien.nama}.jpg")
                     Toast.makeText(
                         applicationContext,
                         pasien.nama.toString() + " is deleted",
@@ -184,5 +215,18 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }).attachToRecyclerView(pasienRecyclerView)
+    }
+
+    private fun deleteFoto(file_name: String) {
+        val storage = Firebase.storage
+        val storageRef = storage.reference
+        val deleteFileRef = storage.reference
+        if (deleteFileRef != null) {
+            deleteFileRef.delete().addOnSuccessListener {
+                Log.e("deleted", "success")
+            }.addOnFailureListener {
+                Log.e("deleted", "failed")
+            }
+        }
     }
 }

@@ -134,8 +134,8 @@
                 android:id="@+id/ChkDiabetes"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:checked="true"
-                android:text="Diabetes"/>
+                android:checked="false"
+                android:text="Diabetes" />
             <CheckBox
                 android:id="@+id/ChkJantung"
                 android:layout_width="match_parent"

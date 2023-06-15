@@ -13,13 +13,11 @@
         android:theme="@style/Theme.Vaksin_Firebase"
         tools:targetApi="31">
         <activity
-            android:name=".pasien.EditPasienActivity"
-            android:exported="false" />
+            android:name=".auth.SignUpActivity"
+            android:exported="false">
+        </activity>
         <activity
-            android:name=".pasien.AddPasienActivity"
-            android:exported="false" />
-        <activity
-            android:name=".MainActivity"
+            android:name=".auth.SignInActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -30,6 +28,20 @@
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />
+        </activity>
+        <activity
+            android:name=".auth.SettingsActivity"
+            android:exported="false">
+        </activity>
+        <activity
+            android:name=".pasien.EditPasienActivity"
+            android:exported="false" />
+        <activity
+            android:name=".pasien.AddPasienActivity"
+            android:exported="false" />
+        <activity
+            android:name=".MainActivity"
+            android:exported="false">
         </activity>
     </application>
 

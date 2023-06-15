@@ -3,12 +3,18 @@ package com.pnj.vaksin_firebase.pasien
 import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.provider.MediaStore
+import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
+import com.google.firebase.storage.FirebaseStorage
 import com.pnj.vaksin_firebase.MainActivity
 import com.pnj.vaksin_firebase.R
 import com.pnj.vaksin_firebase.databinding.ActivityEditPasienBinding
@@ -17,12 +23,18 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+import java.io.ByteArrayOutputStream
+import java.io.File
 import java.lang.Exception
 
 class EditPasienActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityEditPasienBinding
     private val db = FirebaseFirestore.getInstance()
+
+    private val REQ_CAM = 101
+    private lateinit var imgUri: Uri
+    private var dataGambar : Bitmap? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,6 +43,7 @@ class EditPasienActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         val (year, month, day, curr_pasien) = setDefaultValue()
+        showFoto()
 
         binding.TxtEditTglLahir.setOnClickListener {
             val dpd = DatePickerDialog(this,
@@ -49,6 +62,18 @@ class EditPasienActivity : AppCompatActivity() {
             val intentMain = Intent(this, MainActivity::class.java)
             startActivity(intentMain)
             finish()
+        }
+
+        binding.BtnEditImgPasien.setOnClickListener {
+            openCamera()
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if(requestCode == REQ_CAM && resultCode == RESULT_OK) {
+            dataGambar = data?.extras?.get("data") as Bitmap
+            binding.BtnEditImgPasien.setImageBitmap(dataGambar)
         }
     }
 
@@ -122,7 +147,34 @@ class EditPasienActivity : AppCompatActivity() {
         pasien["jenis_kelamin"] = jk
         pasien["penyakit_bawaan"] = penyakit_string
 
+        if (dataGambar != null) {
+            uploadPictFirebase(dataGambar!!, "${nik}_${nama}")
+        }
+        else {
+            Toast.makeText(this@EditPasienActivity,
+                "${nik}_${nama}", Toast.LENGTH_LONG).show()
+        }
+
         return pasien
+    }
+
+    private fun uploadPictFirebase(img_bitmap: Bitmap, file_name: String) {
+        val baos = ByteArrayOutputStream()
+        val ref = FirebaseStorage.getInstance().reference.child("img_pasien/${file_name}.jpg")
+        img_bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
+
+        val img = baos.toByteArray()
+        ref.putBytes(img)
+            .addOnCompleteListener {
+                if(it.isSuccessful) {
+                    ref.downloadUrl.addOnCompleteListener { Task ->
+                        Task.result.let { Uri ->
+                            imgUri = Uri
+                            binding.BtnEditImgPasien.setImageBitmap(img_bitmap)
+                        }
+                    }
+                }
+            }
     }
 
     private fun updatePasien(pasien: Pasien, newPasienMap: Map<String, Any>) =
@@ -156,5 +208,30 @@ class EditPasienActivity : AppCompatActivity() {
                         "No persons matched the query.", Toast.LENGTH_LONG).show()
                 }
             }
+    }
+
+    fun showFoto() {
+        val intent = intent
+        val nik = intent.getStringExtra("nik").toString()
+        val nama = intent.getStringExtra("nama").toString()
+
+        val storageRef = FirebaseStorage.getInstance().reference.child("img_pasien/${nik}_${nama}.jpg")
+        val localfile = File.createTempFile("tempImage", "jpg")
+        storageRef.getFile(localfile).addOnSuccessListener {
+            val bitmap = BitmapFactory.decodeFile(localfile.absolutePath)
+            binding.BtnEditImgPasien.setImageBitmap(bitmap)
+        }.addOnFailureListener{
+            Log.e("foto ?", "gagal")
+        }
+    }
+
+    private fun openCamera() {
+        Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { intent ->
+            this.packageManager?.let {
+                intent?.resolveActivity(it).also {
+                    startActivityForResult(intent, REQ_CAM)
+                }
+            }
+        }
     }
 }
