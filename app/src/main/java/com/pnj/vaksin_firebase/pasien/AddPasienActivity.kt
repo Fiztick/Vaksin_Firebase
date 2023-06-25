@@ -81,6 +81,7 @@ class AddPasienActivity : AppCompatActivity() {
 
         val penyakit_string = penyakit.joinToString("|")
 
+        // masukin ke data class
         val pasien: MutableMap<String, Any> = HashMap()
         pasien["nik"] = nik
         pasien["nama"] = nama
@@ -99,8 +100,10 @@ class AddPasienActivity : AppCompatActivity() {
 //        } // ngasih error duplikat
 
         if (dataGambar != null) {
+            // upload gambar ke storage
             uploadPictFirebase(dataGambar!!, "${nik}_${nama}")
 
+            // upload data classnya ke firebase
             firestoreDatabase.collection("pasien").add(pasien)
                 .addOnSuccessListener {
                     val intentMain = Intent(this, MainActivity::class.java)

@@ -5,6 +5,9 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
+import com.pnj.vaksin_firebase.MainActivity
+import com.pnj.vaksin_firebase.R
+import com.pnj.vaksin_firebase.chat.ChatActivity
 import com.pnj.vaksin_firebase.databinding.ActivitySettingsBinding
 
 class SettingsActivity : AppCompatActivity() {

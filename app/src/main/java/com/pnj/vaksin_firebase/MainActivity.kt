@@ -21,6 +21,7 @@ import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
 import com.pnj.vaksin_firebase.auth.SettingsActivity
+import com.pnj.vaksin_firebase.chat.ChatActivity
 import com.pnj.vaksin_firebase.databinding.ActivityMainBinding
 import com.pnj.vaksin_firebase.pasien.AddPasienActivity
 import com.pnj.vaksin_firebase.pasien.Pasien
@@ -92,7 +93,8 @@ class MainActivity : AppCompatActivity() {
                     startActivity(intent)
                 }
                 R.id.nav_bottom_chat -> {
-//                    val intent = Intent(this, ChatActivity::class.java)
+                    val intent = Intent(this, ChatActivity::class.java)
+                    startActivity(intent)
                 }
             }
             true
@@ -121,13 +123,15 @@ class MainActivity : AppCompatActivity() {
                 })
     }
 
-    private fun search_data(keyword : String) {
+    private fun search_data(keyword : String){
         pasienArrayList.clear()
 
         db = FirebaseFirestore.getInstance()
 
+        // bikin querynya firebase
         val query = db.collection("pasien")
             .orderBy("nama")
+                // where yg ini
             .startAt(keyword)
             .get()
         query.addOnSuccessListener {
